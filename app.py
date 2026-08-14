@@ -1,3 +1,4 @@
+from sqlalchemy import text
 from models.user import CreateUser
 from fastapi import FastAPI, Depends
 from Crypto.Hash import SHA256
@@ -17,7 +18,7 @@ Base.metadata.create_all(bind=engine)
 @app.get("/healthcheck")
 def check_db_connection(db: Session = Depends(get_db)):
     # Simple query rto verify the connection works
-    db.execute("SELECT 1")
+    db.execute(text('SELECT 1'))
     return {"message": "Database connection successful"}
 
 @app.post("/user")

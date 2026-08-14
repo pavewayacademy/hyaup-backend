@@ -4,7 +4,7 @@ from sqlalchemy.orm import sessionmaker
 
 # 1. Define the MySQL connection URL
 # Format: mysql+pymysql://user:password@host:port/database_name
-SQL_ALCHEMY_DATABASE_URL = "mysql+pymysql://root:root@localhost:3306/hyaup"
+SQL_ALCHEMY_DATABASE_URL = "mysql+pymysql://hyaup:hyaup@localhost:3306/hyaup"
 
 # 2. Create the engine
 engine = create_engine(SQL_ALCHEMY_DATABASE_URL, pool_pre_ping=True)
