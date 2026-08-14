@@ -1,21 +1,18 @@
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
+from config.config import settings
 
-# 1. Define the MySQL connection URL
-# Format: mysql+pymysql://user:password@host:port/database_name
-SQL_ALCHEMY_DATABASE_URL = "mysql+pymysql://hyaup:hyaup@localhost:3306/hyaup"
+# Create the engine
+engine = create_engine(settings.SQL_ALCHEMY_DATABASE_URL, pool_pre_ping=True)
 
-# 2. Create the engine
-engine = create_engine(SQL_ALCHEMY_DATABASE_URL, pool_pre_ping=True)
-
-# 3. Create a session factory
+# Create a session factory
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-# 4. Create the Base class for all database models
+# Create the Base class for all database models
 Base = declarative_base()
 
-# 5. Dependency injection function to get a DB session per request
+# Dependency injection function to get a DB session per request
 def get_db():
     db = SessionLocal()
     try:
