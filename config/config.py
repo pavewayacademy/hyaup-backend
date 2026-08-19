@@ -1,7 +1,7 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
-    APP_PORT: str = 8000
+    APP_PORT: int = 8000
     SQL_ALCHEMY_DATABASE_URL: str
 
     model_config = SettingsConfigDict(
