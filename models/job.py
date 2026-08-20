@@ -22,23 +22,26 @@ class JobDB(Base):
 # The incoming data schema; for validating inputs
 class JobCreate(BaseModel):
     title: str = Field(..., description="Job title e.g Backend developer")
-    description: str = Field(..., description="Job description")
+    jobType: str = Field(..., description="Type of job (e.g., Full-time, Part-time)")
     category: str = Field(..., description="Job category")
+    description: str = Field(..., description="Job description")
     location: str = Field(..., description="Job location")
     salary_range: str = Field(description="salary range or salary")
-    required_skills: str = Field(description="Job required_skills")
+    required_skills: list[str] = Field(description="Job required_skills")
     deadline: str = Field(description="Application deadline")
-
+    externalUrl: Optional[str] = None
+    createId: Optional[str] = None
 
 # The outgoing response schema; what is sent back to the user
 class JobResponse(BaseModel):
-    id: int
-    description: int
+    title: str
+    jobType: str
     category: str
+    description: int
     location: str
     salary_range: str
     post_date: str
-    required_skills: str
+    required_skills: list[str]
     deadline: str
 
     class Config:
