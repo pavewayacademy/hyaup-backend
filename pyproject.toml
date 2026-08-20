@@ -10,4 +10,5 @@ dependencies = [
     "pymysql>=1.2.0",
     "sqlalchemy>=2.0.52",
     "uvicorn>=0.52.1",
+    "beautifulsoup4>=4.15.0",
 ]
