@@ -1,3 +1,6 @@
+from fastapi import FastAPI
+from config.database import engine, Base
+from models.job import Job
 from datetime import datetime
 from h11._abnf import status_code
 from fastapi import status
@@ -24,6 +27,12 @@ def check_db_connection(db: Session = Depends(get_db)):
     # Simple query rto verify the connection works
     db.execute(text('SELECT 1'))
     return {"message": "Database connection successful"}
+
+Base.metadata.create_all(bind=engine)
+
+@app.get("/")
+def home():
+    return {"message": "HY AUP Backend is running"}
 
 @app.post("/user", response_model=UserResponse)
 def create_user(data: CreateUser, db: Session = Depends(get_db)):
