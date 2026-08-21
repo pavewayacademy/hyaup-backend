@@ -156,13 +156,14 @@ async def run_scraper_pipeline(target_urls: List[str]):
 
             #print scrapped jobs on terminal
             print(f"\n=================== SCRAPED TEXT FROM: {url} ===================")
-            print(raw_text[:1000])  # Prints the first 1000 characters so it doesn't flood your screen
+            print(raw_text[:2000])  # Prints the first 2000 characters so it doesn't flood your screen
             print("==================================================================\n")
 
             payload = {
                 "source_url": url,
                 "raw_html_text": raw_text,
-                "callback_url": "https://87c16de3c1362c.lhr.life"
+                # Directs the AI team's system to your specific webhook endpoint
+                "callback_url": "https://funny-onions-like.loca.lt/webhook/ai-results"  
             }
 
             try:
@@ -185,7 +186,8 @@ async def trigger_scraper(background_tasks: BackgroundTasks):
     """
     target_urls = [
         "https://cameroonjobs.net",
-        "https://unjobs.org"
+        "https://unjobs.org",
+        "https://www.cameroondesks.com"
     ]
     background_tasks.add_task(run_scraper_pipeline, target_urls)
     return {
@@ -209,4 +211,5 @@ async def receive_ai_job_listings(jobs: List[JobCreate], db: Session = Depends(g
         "status": "success", 
         "message": f"Successfully received {len(jobs)} listings. Database saving block pending model structure."
     }
+
 
