@@ -23,33 +23,6 @@ app = FastAPI(
 # Create the database tables on startup (if they don't exist)
 Base.metadata.create_all(bind=engine)
 
-# ==========================================
-# PYDANTIC DATA MODELS
-# ==========================================
-
-class JobCreate(BaseModel):
-    title: str
-    description: str
-    jobType: str = Field(..., description="Type of job (e.g., Full-time, Part-time)")
-    category: str
-    location: str
-    salaryRange: str
-    postDate: date
-    requiredSkills: List[str]
-    leaveAllowanceDays: int
-    deadline: date
-    externalUrl: Optional[str] = None
-    createId: Optional[str] = None
-
-class JobResponse(JobCreate):
-    id: int
-    isFeatured: bool = False
-    status: str = "pending"
-
-    model_config = ConfigDict(
-        populate_by_name=True,
-        from_attributes=True
-    )
 
 # ==========================================
 # STANDARD API ENDPOINTS
