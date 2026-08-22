@@ -184,20 +184,5 @@ async def trigger_scraper(background_tasks: BackgroundTasks):
     }
 
 
-@app.post("/webhook/ai-results", status_code=200)
-async def receive_ai_job_listings(jobs: List[JobCreate], db: Session = Depends(get_db)):
-    """
-    Webhook endpoint for the AI team to return the structured dictionary of jobs.
-    """
-    # TODO: Once you create a SQL database model for Jobs, you will loop and insert them here:
-    # for job in jobs:
-    #     db.add(JobModel(**job.model_dump()))
-    # db.commit()
-    
-    print(f"[WEBHOOK] Received {len(jobs)} structured job entries from AI team.")
-    return {
-        "status": "success", 
-        "message": f"Successfully received {len(jobs)} listings. Database saving block pending model structure."
-    }
 
 
