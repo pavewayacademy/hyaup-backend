@@ -1,3 +1,6 @@
+from fastapi import FastAPI
+from config.database import engine, Base
+from models.job import Job
 from datetime import datetime
 from models.user import UserResponse, UserLogin, User
 import httpx, asyncio, json
