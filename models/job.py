@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import Optional
+from typing import Optional, List
 from config.database import Base
 from sqlalchemy import Column, Integer, String, Boolean
 
@@ -9,6 +9,7 @@ class JobDB(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     title = Column(String(50), index=True, nullable=False) 
+    jobType = Column(String(50), index=True, nullable=False)
     description = Column(String(1000), nullable=False)
     category = Column(String(100), nullable=False)
     location = Column(String(30), index=True, nullable=False)
@@ -16,6 +17,7 @@ class JobDB(Base):
     post_date = Column(String(50), nullable=False)
     required_skills = Column(String(500), index=True)
     deadline = Column(String(20), index=True)
+    externalUrl = Column(String(50), index=True, nullable=False)
     is_featured = Column(Boolean, default=False)
 
 
@@ -30,7 +32,6 @@ class JobCreate(BaseModel):
     required_skills: list[str] = Field(description="Job required_skills")
     deadline: str = Field(description="Application deadline")
     externalUrl: Optional[str] = None
-    createId: Optional[str] = None
 
 # The outgoing response schema; what is sent back to the user
 class JobResponse(BaseModel):

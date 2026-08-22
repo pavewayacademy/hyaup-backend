@@ -1,17 +1,16 @@
 from datetime import datetime
-from fastapi import status, HTTPException, FastAPI, Depends, BackgroundTasks
-from sqlalchemy import text
-from sqlalchemy.orm import Session
-from models.user import User, CreateUser, UserResponse, UserLogin
+from models.user import UserResponse, UserLogin, User
+import httpx, asyncio, json
+from models.job import JobCreate, JobDB
+from fastapi import FastAPI, Depends, HTTPException, status, BackgroundTasks
+from typing import List
 from Crypto.Hash import SHA256
 from config.database import Base, engine, get_db
-import os
-import asyncio
-from pydantic import BaseModel, Field, ConfigDict
-from datetime import date
-from typing import List, Optional
+from sqlalchemy.orm import Session
+from sqlalchemy.exc import IntegrityError
 from bs4 import BeautifulSoup
-import httpx
+
+
 
 app = FastAPI(
     title= "Hyaup Backend",
@@ -36,13 +35,9 @@ def read_root():
 @app.get("/healthcheck")
 def check_db_connection(db: Session = Depends(get_db)):
     # Simple query to verify the connection works
-    db.execute(text('SELECT 1'))
+    db.execute("SELECT 1")
     return {"message": "Database connection successful"}
 
-@app.post("/user", response_model=UserResponse)
-def create_user(data: CreateUser, db: Session = Depends(get_db)):
-    # Generate username from email address
-    username = data.email.split("@")[0].lower()
 
     # Check if the username and email already exists
     db_user = db.query(User).filter(
@@ -79,16 +74,36 @@ def login(data: UserLogin, db: Session = Depends(get_db)):
     db_user = db.query(User).filter(User.email == data.email).first()
     if not db_user:
         raise HTTPException(status_code=404, detail="User not found")
+#THE JOB POSTING ENDPOINT
+@app.post("/job")
+def Job_create(data: JobCreate, db: Session = Depends(get_db)):
     
-    # Verify the user password
-    hashed_password = SHA256.new(data=data.password.encode("UTF-8")).hexdigest()
-    if hashed_password != db_user.hashed_password:
-        raise HTTPException(status_code=401, detail="Invalid credentials")
+    # Converts the incoming Pydantic validation data into a standard Python dictionary
+    job_dict = data.model_dump()
+
+    job_dict["required_skills"] = json.dumps(job_dict.get("required_skills", []))
     
-    # Update the last login time
-    db_user.last_login_at = datetime.now()
-    db.commit()
-    db.refresh(db_user)
+    # Automatically adds todys date as a string
+    job_dict["post_date"] = datetime.today().strftime("%Y-%m-%d")
+    
+    # this Unpacks the dictionary data to create a new SQLAlchemy database model instance
+    db_job = JobDB(**job_dict)
+    
+    try:
+        db.add(db_job) # Stages new job object
+        db.commit() # permanently saves job records into the daatabase
+        db.refresh(db_job) # refresh the job object to pull newly generated database ID
+        return db_job # retrns job data back to the user
+    except IntegrityError:
+        db.rollback()  # Clean up the failed transaction
+        # stops and sends a clean error message to the browser
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="A job with this unique identifier or title already exists."
+        )
+
+
+
 
     return db_user
 
