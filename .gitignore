@@ -3,3 +3,4 @@
 .env
 serviceAccount.json
 __pycache__/
+.DS_Store
