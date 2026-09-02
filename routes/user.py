@@ -17,6 +17,7 @@ from fastapi import APIRouter, HTTPException, Depends, Query, Path, Body, status
 
 from utils.firebase import create_firebase_user, update_firebase_user, get_user_by_uid, get_user_by_email, get_user_by_phone_number, delete_firebase_user
 from models.user import FirebaseUser, CreateFirebaseUser, UpdateFirebaseUser
+from middleware.auth import verify_firebase_token
 
 # Initiliaze the logger
 logger = logging.getLogger(__name__)
@@ -47,7 +48,7 @@ async def create_user_with_email_and_password(new_user: CreateFirebaseUser = Bod
 
 # Add a route for getting a Firebase User by UID
 @userRouter.get("/{uid}", summary="Get Firebase User by UID", description="Get a Firebase user by UID", response_model=FirebaseUser)
-async def get_firebase_user_by_uid(uid: str):
+async def get_firebase_user_by_uid(uid: str, user: dict = Depends(verify_firebase_token)):
     try:
         result = get_user_by_uid(uid)
     except Exception as e:
