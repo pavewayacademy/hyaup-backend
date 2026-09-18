@@ -10,14 +10,18 @@
 # Get user by email /users/get-by-email/{email} GET
 # Get user by phone /users/get-by-phone/{phone} GET
 
+from sqlalchemy.orm import Session
 from pydantic import EmailStr
 import logging
+from sqlmodel import select
 from typing import List, Dict, Optional
 from fastapi import APIRouter, HTTPException, Depends, Query, Path, Body, status
 
 from utils.firebase import create_firebase_user, update_firebase_user, get_user_by_uid, get_user_by_email, get_user_by_phone_number, delete_firebase_user
-from models.user import FirebaseUser, CreateFirebaseUser, UpdateFirebaseUser
+from models.user import FirebaseUser, CreateFirebaseUser, UpdateFirebaseUser, UpdateUserAccount, User
 from middleware.auth import verify_firebase_token
+from config.database import get_session
+from services.account import AccountService
 
 # Initiliaze the logger
 logger = logging.getLogger(__name__)
@@ -77,10 +81,27 @@ async def get_firebase_user_by_phone_number(phone_number: str):
     return result
 
 # Add a route for updating a Firebase User
-@userRouter.patch("/{uid}", summary="Update Firebase User", description="Update a Firebase user by UID")
-async def patch_firebase_user(uid: str, user: UpdateFirebaseUser = Body(...)):
+@userRouter.patch("/{uid}", summary="Update Firebase User", description="Update a Firebase user by UID", dependencies=[Depends(get_session)])
+async def update_user_account(uid: str, userData: UpdateUserAccount = Body(...), session: Session = Depends(get_session), account_service = Depends(AccountService)):
     try:
-        result = update_firebase_user(user, uid)
+        # Check if user account already exist
+        statement = select(User).where((User.email == userData.email) | (User.uid == userData.uid))
+        statement_exec = await session.exec(statement)
+        existing_user = statement_exec.first()
+        print(existing_user)
+        if existing_user:
+            raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="User already exist")
+        result = None
+        # Check if user is onboarding
+        if userData.is_onboarded == False:
+            # Create new user account
+            logger.info(f"Creating new user account for {userData.uid}")
+            result = await account_service.create_user_account(userData, session)
+        else:
+            # Update user data
+            logger.info(f"Updating user account for {userData.uid}")
+            result = await account_service.update_user_account(userData, session)
+
     except Exception as e:
         logger.error(f"Error updating user: {e}")
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
